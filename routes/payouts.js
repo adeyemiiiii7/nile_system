@@ -11,7 +11,7 @@ const router = express.Router();
 // Vendor payout summary (vendor owners only)
 router.get('/vendors/:vendorId/summary', auth, getVendorPayout);
 
-// Admin access to any vendor's payout (platform oversight)
+// Admin access to any vendor's payout 
 router.get('/admin/vendors/:vendorId/summary', adminAuth, getAdminVendorPayout);
 
 // Get all completed payouts 

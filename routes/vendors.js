@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.use(auth);
 
-// Vendor CRUD operations
+
 router.post('/', createVendor);
 router.get('/', getAllVendors);
 router.get('/:id', getVendorById);
