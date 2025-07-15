@@ -5,7 +5,8 @@ const morgan = require('morgan');
 const { sequelize, testConnection } = require('./config/database');
 const { User } = require('./models');
 const vendorRoutes = require('./routes/vendors');
-const orderRoutes = require('./routes/orders');
+const customerOrdersRouter = require('./routes/customerOrders');
+const vendorOrdersRouter = require('./routes/vendorOrders');
 const payoutRoutes = require('./routes/payouts');
 const authRoutes = require('./routes/auth');
 const { seedDatabase } = require('./seeders/mockData');
@@ -20,7 +21,8 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/vendors', vendorRoutes);
-app.use('/api/orders', orderRoutes);
+app.use('/orders', customerOrdersRouter);
+app.use('/vendor/orders', vendorOrdersRouter);
 app.use('/api/payouts', payoutRoutes);
 
 // Health check endpoint
