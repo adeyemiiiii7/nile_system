@@ -8,7 +8,8 @@ const generateToken = (userId) => {
   });
 };
 
-const register = async (req, res) => {
+// Customer registration
+const registerCustomer = async (req, res) => {
   try {
     const schema = Joi.object({
       name: Joi.string().min(2).max(50).required(),
@@ -29,54 +30,11 @@ const register = async (req, res) => {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    // Create user
+    // Create user (always isAdmin: false)
     const user = await User.create({ name, email, password });
-
 
     res.status(201).json({
       message: 'User created successfully',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-const login = async (req, res) => {
-  try {
-    const schema = Joi.object({
-      email: Joi.string().email().required(),
-      password: Joi.string().required()
-    });
-
-    const { error } = schema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-
-    const { email, password } = req.body;
-
-    // Find user
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Check password
-    const isValidPassword = await user.checkPassword(password);
-    if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    const token = generateToken(user.id);
-
-    res.json({
-      message: 'Login successful',
-      token,
       user: {
         id: user.id,
         name: user.name,
@@ -105,14 +63,13 @@ const registerVendor = async (req, res) => {
 
     const { name, email, password, storeName, bankAccount } = req.body;
 
-
     const existingUser = await User.findOne({ where: { email } });
     const existingVendor = await Vendor.findOne({ where: { email } });
     if (existingUser || existingVendor) {
       return res.status(400).json({ error: 'A vendor account with this email already exists' });
     }
 
-    // Create user
+    // Create user (always isAdmin: false)
     const user = await User.create({ name, email, password });
 
     // Create vendor (linked to user)
@@ -174,9 +131,7 @@ const loginVendor = async (req, res) => {
       return res.status(401).json({ error: 'No vendor account found for this user' });
     }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN
-    });
+    const token = generateToken(user.id);
 
     res.json({
       message: 'Login successful',
@@ -197,9 +152,62 @@ const loginVendor = async (req, res) => {
   }
 };
 
+// Customer login 
+const loginCustomer = async (req, res) => {
+  try {
+    const schema = Joi.object({
+      email: Joi.string().email().required(),
+      password: Joi.string().required()
+    });
+
+    const { error } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+
+    const { email, password } = req.body;
+
+    // Find user
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Check password
+    const isValidPassword = await user.checkPassword(password);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Check if user is a vendor
+    const vendor = await Vendor.findOne({ where: { userId: user.id } });
+    if (vendor) {
+      return res.status(403).json({ error: 'This account is a vendor. Please use the vendor login.' });
+    }
+
+    const token = generateToken(user.id);
+
+    res.json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// /api/auth/login is for customers only
+// /api/auth/login-vendor is for vendors only
+// /api/auth/register-customer is for customers only
+// /api/auth/register-vendor is for vendors only
 module.exports = {
-  register,
-  login,
-  registerVendor,
-  loginVendor
+  registerCustomer,
+  loginCustomer,
+  loginVendor,
+  registerVendor
 };
