@@ -1,40 +1,14 @@
 const bcrypt = require('bcryptjs');
 const { User, Vendor, Product, Order, OrderItem } = require('../models');
 
-const mockUsers = [
-  // Vendors (also users)
-  {
-    name: 'Adebayo Ogundimu',
-    email: 'adebayo.ogundimu@example.com',
-    password: 'password123',
-    isAdmin: false
-  },
-  {
-    name: 'Chioma Okechukwu',
-    email: 'chioma.okechukwu@example.com',
-    password: 'password123',
-    isAdmin: false
-  },
-  // Customers only
-  {
-    name: 'Customer One',
-    email: 'customer1@example.com',
-    password: 'password123',
-    isAdmin: false
-  },
-  {
-    name: 'Customer Two',
-    email: 'customer2@example.com',
-    password: 'password123',
-    isAdmin: false
-  },
-  // Admins
-  {
-    name: 'Nile Platform Admin',
-    email: 'admin@nile.ng',
-    password: 'admin123',
-    isAdmin: true
-  }
+const mockVendorUsers = [
+  { name: 'Adebayo Ogundimu', email: 'adebayo.ogundimu@example.com', password: 'password123' },
+  { name: 'Chioma Okechukwu', email: 'chioma.okechukwu@example.com', password: 'password123' }
+];
+
+const mockCustomerUsers = [
+  { name: 'Customer One', email: 'customer1@example.com', password: 'password123' },
+  { name: 'Customer Two', email: 'customer2@example.com', password: 'password123' }
 ];
 
 const mockVendors = [
@@ -43,7 +17,7 @@ const mockVendors = [
     storeName: 'Lagos Fashion Hub',
     email: 'adebayo.ogundimu@example.com',
     bankAccount: '0123456789',
-    userIndex: 0 // index in mockUsers
+    userIndex: 0 // index in mockVendorUsers
   },
   {
     name: 'Chioma Okechukwu',
@@ -56,25 +30,17 @@ const mockVendors = [
 
 const mockProducts = [
   // Products for Lagos Fashion Hub
-  {
-    name: 'Denim Jacket', price: 15000, stock: 10, vendorIndex: 0, description: 'Classic denim jacket.'
-  },
-  {
-    name: 'Sneakers', price: 12000, stock: 20, vendorIndex: 0, description: 'Trendy sneakers.'
-  },
+  { name: 'Denim Jacket', price: 15000, stock: 10, vendorIndex: 0, description: 'Classic denim jacket.' },
+  { name: 'Sneakers', price: 12000, stock: 20, vendorIndex: 0, description: 'Trendy sneakers.' },
   // Products for Igbo Delicacies
-  {
-    name: 'Igbo Soup', price: 5000, stock: 30, vendorIndex: 1, description: 'Delicious Igbo soup.'
-  },
-  {
-    name: 'Efo Riro', price: 3000, stock: 25, vendorIndex: 1, description: 'Yoruba vegetable soup.'
-  }
+  { name: 'Igbo Soup', price: 5000, stock: 30, vendorIndex: 1, description: 'Delicious Igbo soup.' },
+  { name: 'Efo Riro', price: 3000, stock: 25, vendorIndex: 1, description: 'Yoruba vegetable soup.' }
 ];
 
 const mockOrders = [
   // Customer One buys 2 Denim Jackets and 1 Sneakers from Lagos Fashion Hub
   {
-    customerIndex: 2, // Customer One
+    customerIndex: 2, // Customer One (index in allUsers)
     vendorIndex: 0, // Lagos Fashion Hub
     items: [
       { productIndex: 0, quantity: 2 }, // Denim Jacket
@@ -83,7 +49,7 @@ const mockOrders = [
   },
   // Customer Two buys 3 Igbo Soup from Igbo Delicacies
   {
-    customerIndex: 3, // Customer Two
+    customerIndex: 3, // Customer Two (index in allUsers)
     vendorIndex: 1, // Igbo Delicacies
     items: [
       { productIndex: 2, quantity: 3 } // Igbo Soup
@@ -102,23 +68,26 @@ const seedDatabase = async () => {
     await Vendor.destroy({ where: {} });
     await User.destroy({ where: {} });
 
-    // Create users
+    // Create users (vendors, customers, admins)
+    const allUsers = [...mockVendorUsers, ...mockCustomerUsers];
+    // Only vendor and customer users are seeded. Admins must be created manually or via a separate admin seeder.
     const createdUsers = [];
-    for (const userData of mockUsers) {
+    for (const userData of allUsers) {
       const user = await User.create(userData);
       createdUsers.push(user);
     }
     console.log(`${createdUsers.length} users created`);
 
-    // Create vendors
+    // Create vendors (link to vendor users only)
     const createdVendors = [];
     for (const vendorData of mockVendors) {
+      const vendorUser = createdUsers[vendorData.userIndex];
       const vendor = await Vendor.create({
         name: vendorData.name,
         storeName: vendorData.storeName,
         email: vendorData.email,
         bankAccount: vendorData.bankAccount,
-        userId: createdUsers[vendorData.userIndex].id
+        userId: vendorUser.id
       });
       createdVendors.push(vendor);
     }
