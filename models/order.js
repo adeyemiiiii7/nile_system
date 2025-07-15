@@ -34,6 +34,14 @@ module.exports = (sequelize) => {
         model: 'vendors',
         key: 'id'
       }
+    },
+    customerId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Users',
+        key: 'id'
+      }
     }
   }, {
     tableName: 'orders',
