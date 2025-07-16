@@ -21,8 +21,8 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/vendors', vendorRoutes);
-app.use('/orders', customerOrdersRouter);
-app.use('/vendor/orders', vendorOrdersRouter);
+app.use('/api/orders', customerOrdersRouter);
+app.use('/api/vendor/orders', vendorOrdersRouter);
 app.use('/api/payouts', payoutRoutes);
 
 // Health check endpoint
