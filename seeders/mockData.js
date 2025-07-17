@@ -17,7 +17,7 @@ const mockVendors = [
     storeName: 'Lagos Fashion Hub',
     email: 'adebayo.ogundimu@example.com',
     bankAccount: '0123456789',
-    userIndex: 0 // index in mockVendorUsers
+    userIndex: 0
   },
   {
     name: 'Chioma Okechukwu',
